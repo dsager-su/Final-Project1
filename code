@@ -1,0 +1,72 @@
+import requests
+import pandas as pd 
+import numpy as np
+import json
+
+from requests.auth import HTTPBasicAuth
+response = requests.get('https://www.mysportsfeeds.com/api/feed/pull/nba/2016-2017-regular/roster_players.json?fordate=20160918', auth=HTTPBasicAuth('dsager', 'Orange97'))
+# Pulling information from API
+roster = response.json()
+roster_df = pd.DataFrame(roster['rosterplayers']['playerentry'])
+# Establishing roster dataframe and infromation that will make uo that data frame
+player_df = roster_df[['player']]
+# Establishing player dataframe
+
+    
+roster['rosterplayers']['playerentry'][0]['player']
+
+
+players = []
+
+for pr in roster['rosterplayers']['playerentry'][0:]:
+    
+    pr['player']['team'] = pr['team']['Name']
+    players.append(pr['player'])
+
+
+df = pd.DataFrame( players , columns = ['FirstName','LastName','Position','JerseyNumber','Height','Weight','Age','BirthDate','team' ])
+
+
+choice = ['team' , 'player' , 'position']
+print('Do you want to view data on a specific player, team or position?')
+choice = input("For player data, enter 'player'. For team data, enter 'team'. For position data, enter the position's abbreviation 'PG, SG, SF, PF, C: ' ")
+
+if choice.strip().lower() == 'player': 
+    # Making choice lowercase, starting 'player' option
+    player_choice_first = input("Enter the first name of the player: ")
+    player_choice_last = input('Enter the last name of the player ')
+    player_df = df[(df.FirstName == player_choice_first.title().strip()) & (df.LastName == player_choice_last.title().strip())]
+    if len(player_df) == 0:
+    #Writing exception if input doesn't exist
+        print("NBA player's name not found, spelling may be incorrect.")
+    team_df = player_df
+    position_df = player_df
+    #Setting everything to team_df so that is all that prints
+    
+elif choice.strip().lower() == 'team':
+    team_choice = input('Enter an NBA team name: ')
+    team_df = df[df.team == team_choice.title().strip()]
+    if len(team_df) ==0:
+        print("NBA team not found, spelling may b  e incorrect.")
+     #Writing exception if input doesn't exist
+    player_df = team_df
+    position_df = team_df
+    #Setting everything to team_df so that is all that prints
+    
+elif choice.strip().lower() == 'position':
+    position_choice = input('Enter the position abbreviation you wish to see ')
+    position_df = df[(df.Position == position_choice.upper().strip())]
+    if len(position_df) ==0:
+        print('You did not enter a proper NBA position abbreviation.')
+     #Writing exception if input doesn't exist
+    player_df = position_df
+    team_df = position_df
+    #Setting everything to position_df so that is all that prints
+    
+else:
+    print("You did not enter a valid player, team or position.") 
+    
+player_df
+team_df
+position_df
+ #Printing ONLY the choice that the user chose
